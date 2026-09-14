@@ -138,7 +138,6 @@ Here is a simple nextflow file:
 #!/usr/bin/env nextflow
 
 params.greeting = 'Hello world!'
-greeting_ch = Channel.of(params.greeting)
 
 process SPLITLETTERS {
     input:
@@ -162,11 +161,12 @@ process CONVERTTOUPPER {
 
     script:
     """
-    cat $y | tr '[a-z]' '[A-Z]' 
+    cat $y | tr '[a-z]' '[A-Z]'
     """
 }
 
 workflow {
+    greeting_ch = Channel.of(params.greeting)
     letters_ch = SPLITLETTERS(greeting_ch)
     results_ch = CONVERTTOUPPER(letters_ch.flatten())
     results_ch.view{ it }
@@ -176,8 +176,6 @@ workflow {
 This code begins with a shebang that declares Nextflow as the interpreter.
 
 Then we declare a `parameter` "greeting" and initialize it with the value "Hello world!".
-
-Then we initialize a `channel` labeled "greeting_ch". It contains the value from params.greeting. This channel is the input for the processes in the workflow.
 
 Next we define the `process` named "SPLITLETTERS". This is also called a `process block`. It starts by naming the process, and its definition is enclosed by squiggly brackets.
 
@@ -196,7 +194,9 @@ Look at the next process. What happens in there?
 
 At the end, we define the `workflow scope`, where each process is called. The workflow scope starts with "workflow" and is enclosed in squiggly brackets:
 
-First, execute the process SPLITLETTERS on the greeting_ch (aka greeting channel), and store the output in the channel letters_ch.
+First, we initialize a `channel` labeled "greeting_ch". It contains the value from params.greeting. This channel is the input for the processes in the workflow.
+
+Then: execute the process SPLITLETTERS on the greeting_ch (aka greeting channel), and store the output in the channel letters_ch.
 
 Then, execute the process CONVERTTOUPPER on the letters channel letters_ch, which is flattened using the operator .flatten(). This transforms the input channel in such a way that every item is a separate element. We store the output in the channel results_ch.
 
@@ -334,7 +334,7 @@ pixi run nextflow log
 will show you the executions log and runtime information of all Nextflow runs executed from the current directory(!!). 
 
 ```{.bash}
-nextflow clean
+pixi run nextflow clean -f
 ```
 
 will clean up the project cache and the work directories. Specify the run name and option as explained [here](https://www.nextflow.io/docs/latest/reference/cli.html#clean).
