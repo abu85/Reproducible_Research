@@ -9,7 +9,7 @@ This material is adapted from the [https://training.nextflow.io/latest/](https:/
 The material for this training is available at
 
 ```{.bash}
-medbioinfo2025/common_data/nf-training
+repbio26/common_data/nf-training
 ```
 
 ::: {.callout-important}

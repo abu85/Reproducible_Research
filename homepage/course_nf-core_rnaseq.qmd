@@ -8,7 +8,7 @@ Great, now we have tested that nextflow and nf-core are set up correctly. Now we
 As a little reminder: the data is located in:
 
 ```{.bash}
-medbioinfo2025/common_data/RNAseq
+repbio26/common_data/RNAseq
 ```
 
 ::: {.callout-note}

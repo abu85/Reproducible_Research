@@ -80,7 +80,7 @@ The dataset is available at the European Nucleotide Archive (ENA) under the acce
 I have downloaded four paired samples for you, and they are available at: 
 
 ```{.bash}
-medbioinfo2025/common_data/RNAseq
+repbio26/common_data/RNAseq
 ```
 
 If you want to work with this data, make a symbolic link to the data, do this from within a subdirectory called `data`(or something similar). You want to avoid mingling your data with the analyses:
@@ -98,7 +98,7 @@ The dataset is available at the European Nucleotide Archive (ENA) under the acce
 I have downloaded two samples for you, and they are available at: 
 
 ```{.bash}
-medbioinfo2025/common_data/metagenomics
+repbio26/common_data/metagenomics
 ```
 
 If you want to work with this data, make a symbolic link to the data, do this from within a subdirectory called `data`(or something similar). You want to avoid mingling your data with the analyses:
@@ -116,7 +116,7 @@ This data set is available at the European Nucleotide Archive (ENA) under the ac
 I have downloaded four paired end samples for you, which are available at: 
 
 ```{.bash}
-medbioinfo2025/common_data/wgs
+repbio26/common_data/wgs
 ```
 
 If you want to work with this data, make a symbolic link to the data, do this from within a subdirectory called `data`(or something similar). You want to avoid mingling your data with the analyses:

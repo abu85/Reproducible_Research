@@ -3,6 +3,7 @@ title: "Containers"
 ---
 
 <br>
+Here we use containers directly for bioinformatics tools with Apptainer, so software runs the same way everywhere. (Module 1 introduced containers as a fix for R dependency problems.)
 
 ## Reproducibility in Bioinformatics
 
