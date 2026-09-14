@@ -2,7 +2,7 @@
 title: "Data Management for Reproducible Research"
 ---
 
-## Or: why this course?
+## Or: why this module?
 
 <br>
 
