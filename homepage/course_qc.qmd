@@ -83,7 +83,7 @@ I have downloaded four paired samples for you, and they are available at:
 repbio26/common_data/RNAseq
 ```
 
-If you want to work with this data, make a symbolic link to the data, do this from within a subdirectory called `data`(or something similar). You want to avoid mingling your data with the analyses:
+If you want to work with this data, make a symbolic link to the data, do this from within a subdirectory called `rnaseq/data`(or something similar). You want to avoid mingling your data with the analyses:
 
 ```{.bash}
 ln -s path/to/common_data/RNAseq/*fastq.gz .
@@ -187,12 +187,6 @@ pixi run fastqc --help
 The order of the channels matters. Add conda-forge first, then bioconda. 
 :::
 
-Then, activate the environment with: 
-
-```{.bash}
-pixi shell
-```
-
 
 ### SLURM
 
@@ -207,13 +201,13 @@ To be able to do so, SLURM needs a bit of information from us when we submit a j
 The basic usage of slurm on the command line is thus:
 
 ```{.bash}
-srun -A project_ID -t 30:00 -n 1 <tool options and commands>
+srun -A project_ID -t 30:00 -n 1 pixi run <tool options and commands>
 ```
 
 We want to use FastQC on the samples, so we add the FastQC specific commands:
 
 ```{.bash}
-srun -A project_ID -t 15:00 -n 1 fastqc --noextract -o fastqc data/sample_1.fastq.gz data/sample_2.fastq.gz 
+srun -A project_ID -t 15:00 -n 1 pixi run fastqc --noextract -o fastqc data/sampleA_1.fastq.gz data/sampleA_2.fastq.gz
 ```
 
 You will of course have to modify for your project structure. 
@@ -261,7 +255,7 @@ Copy the following into the `fastqc.sh` file, and save the contents. Read throug
 #SBATCH -t 30:00
 #SBATCH -n 1
 
-fastqc -o ../fastqc --noextract ../data/*fastq.gz
+pixi run fastqc -o ../fastqc --noextract ../data/*fastq.gz
 ```
 
 Save and run within your Pixi environment: 
