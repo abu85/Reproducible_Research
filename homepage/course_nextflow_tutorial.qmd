@@ -85,10 +85,10 @@ More information here: https://www.nextflow.io/docs/latest/channel.html#channel-
 
 ## Execution abstraction
 
-Another important concept in Nextflow. This is the way you ran fastQC on your samples in pre-course exercise 7:
+Another important concept in Nextflow. This is the way you ran fastQC on your samples yesterday:
 
 ```{.bash}
-srun -A project_ID -t 15:00 -n 1 fastqc --noextract -o fastqc data data/sample_1.fastq.gz data/sample_2.fastq.gz 
+srun -A project_ID -t 15:00 -n 1 pixi run fastqc --noextract -o fastqc_out data data/sample_1.fastq.gz data/sample_2.fastq.gz 
 ```
 
 Here, there is a mix of information on what command should be executed (fastqc with the noextract option) and information on how the script should be run on the target platform (debitted to which project, run for 15 minutes etc.).
