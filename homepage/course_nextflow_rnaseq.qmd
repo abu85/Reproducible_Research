@@ -11,7 +11,7 @@ To demonstrate a real-world biomedical scenario, we will implement a proof of co
 3. Performs quantification
 4. Creates a MultiQC report
 
-This will be done using a series of seven scripts, each of which builds on the previous to create a complete workflow. You can find these in the tutorial folder (`script1.nf` - `script6.nf`). These scripts will make use of third-party tools that are known by bioinformaticians but that may be new to you so we'll briefly introduce them below.
+This will be done using a series of seven scripts, each of which builds on the previous to create a complete workflow. You can find these in the tutorial folder (`script1.nf` - `script7.nf`). These scripts will make use of third-party tools that are known by bioinformaticians but that may be new to you so we'll briefly introduce them below.
 
 - [Salmon](https://combine-lab.github.io/salmon/) is a tool for quantifying molecules known as transcripts through a type of data called RNA-seq data.
 - [FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/) is a tool to perform quality control for high throughput sequence data. You can think of it as a way to assess the quality of your data.
@@ -47,7 +47,7 @@ executor {
 - Here, we set the executor for every process to slurm.
 - We set resume to true, so it is automatically used for all our runs (which means we do not have to specify this in our nextflow run command anymore). 
 - We enable singularity and set some singularity run options.
-- Lastly, we specify the account name for the slurm execution. 
+- Lastly, we specify the account name for the slurm execution, replace the placeholder with the actual compute allocation ID. 
 
 This nextflow.config file is implicitly called when we execute nextflow from the folder it is in. We do not have to explicitely name it in the nextflow run command. 
 
@@ -58,11 +58,15 @@ Parameters are inputs and options that can be changed when the workflow is run.
 The script script1.nf defines the workflow input parameters:
 
 ```{.md}
+#!/usr/bin/env nextflow
+
 params.reads = "$projectDir/data/ggal/gut_{1,2}.fq"
 params.transcriptome_file = "$projectDir/data/ggal/transcriptome.fa"
 params.multiqc = "$projectDir/multiqc"
 
-println "reads: $params.reads"
+workflow {
+    println "reads: $params.reads"
+}
 ```
 
 Run it by using the following command:
@@ -103,7 +107,7 @@ process INDEX {
 }
 ```
 
-Additionally, add a `workflow scope` containing an input channel definition and the index process:
+Additionally, replace the existing `workflow scope` with  an input channel definition and the index process:
 
 ```{.md}
 workflow {
@@ -123,19 +127,19 @@ pixi run nextflow run script1.nf
 Why doesn't this work? What have we forgotten?
 :::
 
-### add Salmon to your environment
+### EITHER add Salmon to your environment
 
 ```{.bash}
 pixi add salmon
 ```
 
-### add Salmon in a container to the process
+### OR add Salmon in a container to the process
 
-Adding a container to the process and running the tool via the container is more reproducible than adding it to your environment. Use the `container` directive and add the URL to the container to the process scope: 
+Adding a container to the process and running the tool via the container is more reproducible than adding it to your environment. Use the `container` directive and add the URL to the container to the process scope, above the input block: 
 
 
 ```{.bash}
-container 'https://depot.galaxyproject.org/singularity/salmon:1.10.1--h7e5ed60_0'
+container 'oras://community.wave.seqera.io/library/salmon:2.7.0--cb05356ce9eb88b7'
 ```
 
 ::: {.callout-note}
@@ -146,6 +150,8 @@ publishDir "$params.outdir/salmon"
 ```
 
 This command line would typically be located just below the container directive. 
+
+By default `publishDir` **links** the published files back into the `work/` directory rather than copying them. This is fast and saves space, but it means the files disappear if you clean `work/`. Add `mode: 'copy'` when you want an independent copy that survives a cleanup, for example a result you intend to keep or share.
 :::
 
 ## Define run time environment
@@ -167,31 +173,64 @@ To specify memory add mem = xx.GB - check with your cluster to see how much memo
 pixi run nextflow run script1.nf 
 ```
 
-Collect read files by pairs
+## Interlude: Visualize tuples
 
-This step shows how to match read files into pairs, so they can be mapped by Salmon.
+Salmon needs **both** reads of a pair together to quantify a sample. Our data folder holds six files — three samples, two files each:
 
-Run script3.nf:
+```
+gut_1.fq    gut_2.fq
+liver_1.fq  liver_2.fq
+lung_1.fq   lung_2.fq
+```
+
+If we simply collected every `.fq` into one channel, Nextflow would see six loose files with nothing saying that `gut_1` and `gut_2` belong together. We need them **grouped by sample**.
+
+That is what the `fromFilePairs` channel factory does, and we can have a look at it in `script3.nf`. The `{1,2}` in the pattern marks the part that differs between the two files of a pair; Nextflow groups the files that share everything else:
+
+```groovy
+read_pairs_ch = channel.fromFilePairs(params.reads)
+```
+
+To see what it produces, view the channel from inside the workflow:
+
+```groovy
+workflow {
+    read_pairs_ch = channel.fromFilePairs(params.reads)
+    read_pairs_ch.view()
+}
+```
+
+Run it:
 
 ```{.bash}
 pixi run nextflow run script3.nf
 ```
 
-Now add
-
-```{.bash}
-read_pairs_ch.view()
-```
-
-to the bottom of the script, save it and run it again.
-
-It will print something similar to this:
+It prints one item per sample:
 
 ```{.md}
 [gut, [/.../data/ggal/gut_1.fq, /.../data/ggal/gut_2.fq]]
 ```
 
-The above example shows how the read_pairs_ch channel emits `tuples` composed of two elements, where the first is the `read pair prefix` and the second is a `list` representing the actual files.
+Read that line piece by piece — each item is a **tuple** with two parts:
+
+- `gut` — the **sample ID**, taken from the shared prefix of the file names, and
+- `[gut_1.fq, gut_2.fq]` — a **list** of the two files that belong to that sample.
+
+::: {.callout-tip}
+Think of it like matching socks: `fromFilePairs` puts `_1` and `_2` together by their shared name, and the `{1,2}` glob tells Nextflow which part is allowed to differ.
+:::
+
+::: {.callout-note}
+`params.reads` points at `gut` only, so you see one pair. Point it at all three samples to watch them grouped side by side:
+
+```{.bash}
+pixi run nextflow run script3.nf --reads 'data/ggal/*_{1,2}.fq'
+```
+
+Because each item carries the ID **and** both files together, Salmon can process each sample in a single task — and Nextflow runs all three in parallel. That is the behaviour you will use in the next step.
+:::
+
 
 ## Expression quantification
 
