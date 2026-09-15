@@ -4,20 +4,50 @@ title: "Nextflow RNAseq pipeline"
 
 ## Simple RNA-Seq workflow (from Seqera training materials)
 
-To demonstrate a real-world biomedical scenario, we will implement a proof of concept RNA-Seq workflow which:
+To demonstrate a real-world biomedical scenario, we will implement a proof-of-concept RNA-seq workflow that indexes a transcriptome, checks read quality, quantifies expression, and produces a summary report.
 
-1. Indexes a transcriptome file
-2. Performs quality controls
-3. Performs quantification
-4. Creates a MultiQC report
+We will build it up across a series of seven scripts (`script1.nf` – `script7.nf`), each one adding a step to the previous. The workflow uses three third-party tools that may be new to you:
 
-This will be done using a series of seven scripts, each of which builds on the previous to create a complete workflow. You can find these in the tutorial folder (`script1.nf` - `script7.nf`). These scripts will make use of third-party tools that are known by bioinformaticians but that may be new to you so we'll briefly introduce them below.
+- [Salmon](https://combine-lab.github.io/salmon/) — quantifies transcripts from RNA-seq data.
+- [FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/) — performs quality control on high-throughput sequencing data.
+- [MultiQC](https://multiqc.info/) — searches a directory for analysis logs and compiles them into a single HTML report.
 
-- [Salmon](https://combine-lab.github.io/salmon/) is a tool for quantifying molecules known as transcripts through a type of data called RNA-seq data.
-- [FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/) is a tool to perform quality control for high throughput sequence data. You can think of it as a way to assess the quality of your data.
-- [MultiQC](https://multiqc.info/) searches a given directory for analysis logs and compiles a HTML report. It's a general use tool, perfect for summarizing the output from numerous bioinformatics tools.
+These may not be the exact tools you will use in your own field, but they can be swapped for any comparable tool — that is the power of Nextflow.
 
-Though these tools may not be the ones you will use in your pipeline, they could just be replaced by any common tool of your area. That's the power of Nextflow!
+## The pipeline at a glance
+
+Before we build it piece by piece, here is the whole workflow. It takes a reference transcriptome and paired-end RNA-seq reads, and produces per-sample expression estimates plus a single quality report. Each box is one step; the arrows show what feeds into what.
+
+```{mermaid}
+%%{init: {'themeVariables': {'lineColor': '#0f7040'}}}%%
+flowchart TD
+    T([transcriptome.fa]) --> IDX["INDEX — salmon index"]
+    IDX --> SI([salmon_index])
+    R([paired-end reads]) -->|fromFilePairs| RP([read pairs, per sample])
+    SI --> Q["QUANTIFICATION — salmon quant"]
+    RP --> Q
+    RP --> FQ["FASTQC — quality control"]
+    Q --> M["MULTIQC — summary report"]
+    FQ --> M
+    Q --> QR([quantification results])
+    M --> REP([multiqc_report.html])
+
+    linkStyle default stroke-width:4px
+```
+
+**Step by step — and why each tool is used when:**
+
+1. **Index the transcriptome reference — `salmon index`.** Salmon cannot quantify reads against a plain FASTA; it first needs to turn the reference into a fast, searchable index. We do this once at the start, and every sample reuses the same index.
+
+2. **Quantify expression — `salmon quant`.** For each sample, Salmon maps the read pair against the index and estimates how much of each transcript is present. Here Salmon turns raw reads into numbers to analyse.
+
+3. **Check read quality — `FastQC`.** In parallel, FastQC inspects the raw reads of each sample (base quality, adapter content, and so on). We run it *alongside* quantification, not after, because quality control is independent of the counting.
+
+4. **Summarise everything — `MultiQC`.** Finally, MultiQC gathers the logs from all the samples (Salmon and FastQC) into one HTML report, so you read a single summary instead of opening dozens of files. It waits for the all earlier steps to finish before it runs.
+
+::: {.callout-note}
+Notice the two branches: **quantification** and **quality control** don't depend on each other, so Nextflow runs them at the same time. They only come back together at **MultiQC**, which needs both before it can build the report. Keeping independent work parallel — and joining it only where necessary — is a large part of what makes a workflow manager worth using.
+:::
 
 ## Preparations
 
