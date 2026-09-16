@@ -47,14 +47,13 @@ And here the way this could be implemented in a `process block` as part of a Nex
 
 ```{.bash}
 process PROCESS_NAME{
-
+    // directives
+    container
+    
     input:
       data z
       data y
       data x
-
-    // directives
-    container
 
     script:
       task1
@@ -121,7 +120,7 @@ Start a screen session and initialize the Pixi environment:
 
 ```{.bash}
 screen -S nextflow
-pixi init -c bioconda -c conda-forge
+pixi init -c conda-forge -c bioconda
 ```
 :::
 
