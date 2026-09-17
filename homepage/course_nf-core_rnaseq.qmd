@@ -54,7 +54,7 @@ This is how my project directory looks like afterwards:
 
 ## nf-core launch
 
-Nf-core helps you set up the pipelines with the `nf-core launcher`. To access that, click on the `launch version 3.19.0` button on the [nf-core/rnaseq homepage](https://nf-co.re/rnaseq/3.19.0/). (This was the version available in the launcher at the time of writing this session. The version number will change in the future). We are then redirected to a page where we can fill in all of our information about input files, as well as selecting or deselecting certain parts of the pipeline. We will share the things here that you need to input each time, and go through some finer details based on the discussion with you.
+Nf-core helps you set up the pipelines with the `nf-core launcher`. To access that, click on the `launch version 3.26.0` button on the [nf-core/rnaseq homepage](https://nf-co.re/rnaseq/3.26.0/). (This was the version available in the launcher at the time of writing this session. The version number will change in the future). We are then redirected to a page where we can fill in all of our information about input files, as well as selecting or deselecting certain parts of the pipeline. We will share the things here that you need to input each time, and go through some finer details based on the discussion with you.
 
 ### Setting working and results directories
 

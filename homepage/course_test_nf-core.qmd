@@ -20,7 +20,7 @@ pixi init nextflow_test -c conda-forge -c bioconda
 Change directory into the project you created, and list the files there:
 
 ```{.bash}
-cd name_nextflow
+cd nextflow_test
 ls
 ```
 
@@ -62,7 +62,7 @@ wget https://raw.githubusercontent.com/hpc2n/intro-course/master/exercises/NEXTF
 
 Here is the configuration profile on HPC2N from the above link. The most important things we need to pay attention to are the `max_memory`, `max_cpus`, and `max_time` settings. Your jobs won't be able to exceed these maximum values. 
 
-To use the config file with nextflow you need to add our compute project under `project`. Use single quotes, as seen in the other entries in the file. 
+To use the config file with nextflow you need to add our compute project under `project`, on line 6. Use single quotes, as seen in the other entries in the file. 
 
 ```{.bash}
 // Config profile for HPC2N
